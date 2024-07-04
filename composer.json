@@ -1,0 +1,28 @@
+{
+    "name": "cnrp/laravel-invoicer",
+    "description": "A flexible invoice package for Laravel",
+    "type": "library",
+    "require": {
+        "php": "^7.3|^8.0",
+        "illuminate/support": "^8.0|^9.0|^10.0",
+        "illuminate/view": "^8.0|^9.0|^10.0",
+        "spatie/browsershot": "^4.0",
+        "spatie/laravel-pdf": "^1.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "CNRP\\InvoicePackage\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "CNRP\\InvoicePackage\\InvoiceServiceProvider"
+            ],
+            "aliases": {
+                "Invoice": "CNRP\\InvoicePackage\\Facades\\Invoice"
+            }
+        }
+    },
+    "license": "MIT"
+}
