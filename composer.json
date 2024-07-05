@@ -1,6 +1,6 @@
 {
     "name": "cnrp/laravel-invoicer",
-    "description": "A flexible invoice package for Laravel",
+    "description": "A flexible invoice package for Laravel using spatiepdf",
     "type": "library",
     "require": {
         "php": "^7.3|^8.0",
@@ -24,5 +24,6 @@
             }
         }
     },
+    "version": "1.0.0",
     "license": "MIT"
 }
