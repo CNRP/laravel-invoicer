@@ -1,5 +1,5 @@
 .invoice-body {
-    @apply px-8 py-4 font-sans antialiased bg-white;
+    @apply px-12 py-4 font-sans antialiased bg-white;
 }
 
 .invoice-container {
@@ -104,4 +104,8 @@
 
 .invoice-footer {
     @apply text-sm text-center text-gray-700;
+}
+
+.invoice-main {
+    @apply flex flex-col gap-8;
 }

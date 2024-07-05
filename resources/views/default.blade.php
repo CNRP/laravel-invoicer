@@ -2,8 +2,7 @@
 <html>
 <head>
     @vite(['resources/css/app.css'])
-    @vite(['resources/css/invoice-bold.css'])
-    @vite(['resources/css/invoice-clear.css'])
+    @vite(['resources/css/invoice-clean.css'])
 
 </head>
 <body class="relative invoice-body">
