@@ -18,7 +18,7 @@ class InvoiceServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../config/invoice.php' => config_path('invoice.php'),
-                __DIR__ . '/../resources/views' => resource_path('views/laravel-invoicer'),
+                __DIR__ . '/../resources/views' => resource_path('views/vendor/invoice'),
                 __DIR__ . '/../resources/css' => resource_path('css'),
 
             ], 'invoice');
