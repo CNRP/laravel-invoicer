@@ -3,7 +3,7 @@
 namespace CNRP\InvoicePackage;
 
 use Illuminate\Support\ServiceProvider;
-
+use Livewire\Livewire;
 class InvoiceServiceProvider extends ServiceProvider
 {
     public function register()
@@ -26,6 +26,8 @@ class InvoiceServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'invoice');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+
+        Livewire::component('invoice-creator', \CNRP\InvoicePackage\Components\CreateInvoice::class);
 
     }
 }

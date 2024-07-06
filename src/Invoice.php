@@ -10,10 +10,9 @@ use Spatie\LaravelPdf\Enums\Unit;
 
 class Invoice
 {
+    protected $config;
     protected $items = [];
     protected $total = 0;
-    protected $config;
-    protected $contacts;
 
     public function __construct(array $config = [], array $items = [])
     {
@@ -51,11 +50,6 @@ class Invoice
         return $this->config;
     }
 
-    public function getContacts()
-    {
-        return $this->contacts;
-    }
-
     public function getColumns()
     {
         $columns = [];
@@ -82,30 +76,12 @@ class Invoice
                 }
             }
         }
-
         return $columns;
-    }
-
-
-    public function render()
-    {
-        $data = [
-            'items' => $this->items,
-            'total' => $this->getTotal(),
-            'config' => $this->config,
-            'contacts' => $this->getContacts(),
-            'columns' => $this->getColumns()
-        ];
-        // Log::info('Rendering view', $data);
-        return View::make('invoice::default', $data);
     }
 
     public function generatePdf()
     {
         try {
-            // Log::info('Generating PDF');
-            $htmlContent = $this->render()->render();
-            // Log::info('Generated HTML content', ['html' => $htmlContent]);
 
             $filename = 'invoice-' . time() . '.pdf';
             $directory = storage_path('app/invoices/');
@@ -121,7 +97,6 @@ class Invoice
                     'items' => $this->items,
                     'total' => $this->getTotal(),
                     'config' => $this->config,
-                    'contacts' => $this->contacts,
                     'columns' => $this->getColumns()
                 ])
                 ->margins($margin, $margin, $margin, $margin, Unit::Pixel)
