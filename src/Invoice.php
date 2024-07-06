@@ -26,7 +26,7 @@ class Invoice
     {
         $this->items[] = $item;
         $this->calculateTotal();
-        // Log::info('Item added', $item);
+        Log::info('Item added', $item);
     }
 
     protected function calculateTotal()
@@ -79,6 +79,27 @@ class Invoice
         return $columns;
     }
 
+    protected function filterEnabledFields()
+    {
+        $filteredConfig = $this->config;
+        foreach ($filteredConfig as $sectionKey => &$sectionData) {
+            if (is_array($sectionData)) {
+                foreach ($sectionData as $key => &$data) {
+                    if (isset($data['enabled']) && !$data['enabled']) {
+                        unset($sectionData[$key]);
+                    } elseif (isset($data['fields'])) {
+                        foreach ($data['fields'] as $fieldKey => $fieldData) {
+                            if (isset($fieldData['enabled']) && !$fieldData['enabled']) {
+                                unset($data['fields'][$fieldKey]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $filteredConfig;
+    }
+
     public function generatePdf()
     {
         try {
@@ -92,18 +113,19 @@ class Invoice
                 File::makeDirectory($directory, 0755, true);
             }
 
+            $filteredConfig = $this->filterEnabledFields();
+
             $margin = 0;
             Pdf::view('invoice::default', [
                     'items' => $this->items,
                     'total' => $this->getTotal(),
-                    'config' => $this->config,
+                    'config' => $filteredConfig,
                     'columns' => $this->getColumns()
                 ])
                 ->margins($margin, $margin, $margin, $margin, Unit::Pixel)
                 ->format('a4')
                 ->withBrowsershot(function ($browsershot) {
-                    // Log::info('Configuring Browsershot');
-                    $browsershot->setNodeBinary(config('invoice.node_binary'))->noSandbox();
+                    $browsershot->setNodeBinary(config('invoice.settings.node_binary'))->noSandbox();
                 })->save($path);
 
             Log::info('PDF saved', ['path' => $path]);

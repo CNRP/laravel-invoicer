@@ -1,5 +1,4 @@
 <?php
-
 namespace CNRP\InvoicePackage\Components;
 
 use Livewire\Component;
@@ -7,72 +6,49 @@ use CNRP\InvoicePackage\Invoice;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 
 class CreateInvoice extends Component
 {
-    public $fields = [
-        'logo' => '',
-        'title' => 'INVOICE',
-        'invoice_number' => '',
-        'date' => '',
-        'from' => [
-            'name' => '',
-            'phone' => '',
-            'email' => '',
-            'address_line_1' => '',
-            'address_line_2' => '',
-            'address_line_3' => '',
-        ],
-        'to' => [
-            'name' => '',
-            'phone' => '',
-            'email' => '',
-            'address_line_1' => '',
-            'address_line_2' => '',
-            'address_line_3' => '',
-        ],
-        'description' => '',
-        'payment_terms' => '',
-        'payment_details' => '',
-        'footer' => '',
-        'is_paid' => false,
-    ];
-
+    public $fields = [];
     public $items = [
         ['name' => '', 'quantity' => 1, 'price' => 0],
     ];
+    public $config;
 
     public function mount()
     {
-        // $this->fields['date'] = Carbon::now()->toDateString();
+        $this->config = Config::get('invoice');
+        $this->initializeFields();
+    }
 
-        $this->fields = [
-            'logo' => Config::get('invoice.logo', ''),
-            'title' => Config::get('invoice.title', 'INVOICE'),
-            'invoice_number' => Config::get('invoice.invoice_number', 'INV-0001'),
-            'date' => now()->toDateString(),
-            'from' => [
-                'name' => Config::get('invoice.from.name', ''),
-                'phone' => Config::get('invoice.from.phone', ''),
-                'email' => Config::get('invoice.from.email', ''),
-                'address_line_1' => Config::get('invoice.from.address_line_1', ''),
-                'address_line_2' => Config::get('invoice.from.address_line_2', ''),
-                'address_line_3' => Config::get('invoice.from.address_line_3', ''),
-            ],
-            'to' => [
-                'name' => '',
-                'phone' => '',
-                'email' => '',
-                'address_line_1' => '',
-                'address_line_2' => '',
-                'address_line_3' => '',
-            ],
-            'description' => Config::get('invoice.description', ''),
-            'payment_terms' => Config::get('invoice.payment_terms', ''),
-            'payment_details' => Config::get('invoice.payment_details', ''),
-            'footer' => Config::get('invoice.footer', ''),
-            'is_paid' => Config::get('invoice.is_paid', false),
-        ];
+    protected function initializeFields()
+    {
+        foreach ($this->config['invoice_structure'] as $section => $sectionData) {
+            if (is_array($sectionData)) {
+                foreach ($sectionData as $key => $data) {
+                    if (isset($data['enabled'])) {
+                        $this->fields[$section][$key] = [
+                            'enabled' => $data['enabled'],
+                            'value' => isset($data['fields']) ? [] : $data['default'],
+                        ];
+                        if (isset($data['fields'])) {
+                            foreach ($data['fields'] as $fieldKey => $fieldData) {
+                                $this->fields[$section][$key]['value'][$fieldKey] = [
+                                    'enabled' => $fieldData['enabled'],
+                                    'value' => $fieldData['default'],
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Set date dynamically
+        if (isset($this->fields['header']['date'])) {
+            $this->fields['header']['date']['value'] = Carbon::now()->toDateString();
+        }
     }
 
     public function addItem()
@@ -88,42 +64,86 @@ class CreateInvoice extends Component
 
     public function createInvoice()
     {
-        $rules = [
-            'fields.logo' => 'nullable|url',
-            'fields.title' => 'required|string',
-            'fields.invoice_number' => 'required|string',
-            'fields.date' => 'required|date',
-            'fields.from.name' => 'required|string',
-            'fields.from.phone' => 'nullable|string',
-            'fields.from.email' => 'nullable|email',
-            'fields.from.address_line_1' => 'required|string',
-            'fields.from.address_line_2' => 'nullable|string',
-            'fields.from.address_line_3' => 'nullable|string',
-            'fields.to.name' => 'required|string',
-            'fields.to.phone' => 'nullable|string',
-            'fields.to.email' => 'nullable|email',
-            'fields.to.address_line_1' => 'required|string',
-            'fields.to.address_line_2' => 'nullable|string',
-            'fields.to.address_line_3' => 'nullable|string',
-            'fields.description' => 'required|string',
-            'fields.payment_terms' => 'required|string',
-            'fields.payment_details' => 'required|string',
-            'fields.footer' => 'nullable|string',
-            'fields.is_paid' => 'boolean',
-            'items.*.name' => 'required|string',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.price' => 'required|numeric|min:0',
+        $rules = $this->generateValidationRules();
+
+        $filteredFields = $this->filterEnabledFields($this->fields);
+
+        $data = [
+            'fields' => $filteredFields,
+            'items' => $this->items,
         ];
 
-        $data = $this->validate($rules);
+        $validator = Validator::make($data, $rules);
 
-        $invoice = new Invoice($this->fields, $this->items);
+        if ($validator->fails()) {
+            Log::error('Validation failed', $validator->errors()->toArray());
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $invoice = new Invoice($filteredFields, $this->items);
 
         return $invoice->generateAndDownloadPdf();
     }
 
+    protected function filterEnabledFields($fields)
+    {
+        $filteredFields = [];
+
+        foreach ($fields as $section => $sectionData) {
+            foreach ($sectionData as $key => $data) {
+                if ($data['enabled']) {
+                    if (is_array($data['value'])) {
+                        foreach ($data['value'] as $fieldKey => $fieldData) {
+                            if ($fieldData['enabled']) {
+                                $filteredFields[$section][$key][$fieldKey] = $fieldData['value'];
+                            }
+                        }
+                    } else {
+                        $filteredFields[$section][$key] = $data['value'];
+                    }
+                }
+            }
+        }
+
+        return $filteredFields;
+    }
+
+    protected function generateValidationRules()
+    {
+        $rules = [];
+        foreach ($this->config['invoice_structure'] as $section => $sectionData) {
+            if (is_array($sectionData)) {
+                foreach ($sectionData as $key => $data) {
+                    if (isset($data['enabled'])) {
+                        if (isset($data['fields'])) {
+                            foreach ($data['fields'] as $fieldKey => $fieldData) {
+                                if ($fieldData['enabled']) {
+                                    $rules["fields.{$section}.{$key}.value.{$fieldKey}.value"] = 'nullable|string';
+                                }
+                            }
+                        } else {
+                            $rule = 'nullable|string';
+                            if ($key === 'logo') {
+                                $rule = 'nullable|url';
+                            } elseif ($key === 'date') {
+                                $rule = 'nullable|date';
+                            } elseif ($key === 'is_paid') {
+                                $rule = 'boolean';
+                            }
+                            $rules["fields.{$section}.{$key}.value"] = $rule;
+                        }
+                    }
+                }
+            }
+        }
+        return $rules;
+    }
+
     public function render()
     {
-        return view('invoice::livewire.create-invoice');
+        return view('invoice::livewire.create-invoice', [
+            'fields' => $this->fields,
+            'config' => $this->config,
+        ]);
     }
 }
