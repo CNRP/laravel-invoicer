@@ -1,138 +1,49 @@
-<div class="flex flex-col gap-4">
-    <livewire:flash-message />
+<div class="relative flex flex-col gap-4">
+    <x-invoice-modal name="create-invoice" :title="'Create Invoice'">
+        <div x-data="{ activeTab: '{{ array_key_first($config['invoice_structure']) }}' }" class="relative max-h-[80dvh] flex gap-8 -translate-y-8">
+            <x-invoice-preview :previewHtml="$previewHtml" />
 
-    <x-modal name="create-invoice" :title="'Create Invoice'">
-        <div>
-            <form wire:submit.prevent="createInvoice" class="space-y-6">
-                @foreach ($config['invoice_structure'] as $sectionKey => $sectionData)
-                    <fieldset class="p-4 border rounded-md" x-data="{ open: true }">
-                        <legend class="text-lg font-medium">
-                            <button type="button" @click="open = !open" class="flex items-center justify-between w-full text-left">
-                                {{ ucfirst(str_replace('_', ' ', $sectionKey)) }}
-                                <svg x-show="!open" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                                <svg x-show="open" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                </svg>
-                            </button>
-                        </legend>
-                        <div x-show="open" class="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
-                            @foreach ($sectionData as $key => $data)
-                                @if (isset($fields[$sectionKey][$key]))
-                                    @if (isset($data['fields']))
-                                        <div class="col-span-1 sm:col-span-2">
-                                            <h4 class="mb-2 font-medium text-md">{{ ucfirst(str_replace('_', ' ', $key)) }}</h4>
-                                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                                @foreach ($data['fields'] as $fieldKey => $fieldData)
-                                                    @if (isset($fields[$sectionKey][$key]['value'][$fieldKey]))
-                                                        <div x-data="{ fieldEnabled: @entangle('fields.' . $sectionKey . '.' . $key . '.value.' . $fieldKey . '.enabled') }" class="col-span-1 sm:col-span-2">
-                                                            <div class="flex items-center">
-                                                                <label for="{{ $sectionKey }}_{{ $key }}_{{ $fieldKey }}" class="block text-sm font-medium text-gray-700">
-                                                                    {{ ucfirst(str_replace('_', ' ', $fieldKey)) }}:
-                                                                </label>
-                                                                <input type="checkbox" x-model="fieldEnabled" class="ml-2">
-                                                                <span x-text="fieldEnabled ? 'Enabled' : 'Disabled'" class="ml-1 text-sm" :class="fieldEnabled ? 'text-green-500' : 'text-red-500'"></span>
-                                                            </div>
-                                                            <div class="mt-1">
-                                                                <template x-if="fieldEnabled">
-                                                                    <input type="text"
-                                                                           id="{{ $sectionKey }}_{{ $key }}_{{ $fieldKey }}"
-                                                                           wire:model="fields.{{ $sectionKey }}.{{ $key }}.value.{{ $fieldKey }}.value"
-                                                                           class="block w-full mt-1 border-gray-300 rounded-md shadow-sm">
-                                                                </template>
-                                                                <template x-if="!fieldEnabled">
-                                                                    <span class="block w-full mt-1 bg-gray-100 border-gray-300 rounded-md shadow-sm">
-                                                                        {{ $fields[$sectionKey][$key]['value'][$fieldKey]['value'] ?? $fieldData['default'] }}
-                                                                    </span>
-                                                                </template>
-                                                                @error("fields.{$sectionKey}.{$key}.value.{$fieldKey}.value")
-                                                                    <div class="mt-1 text-sm text-red-500">{{ $message }}</div>
-                                                                @enderror
-                                                            </div>
-                                                        </div>
-                                                    @endif
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @else
-                                        <div x-data="{ fieldEnabled: @entangle('fields.' . $sectionKey . '.' . $key . '.enabled') }" class="col-span-1 sm:col-span-2">
-                                            <div class="flex items-center">
-                                                <label for="{{ $sectionKey }}_{{ $key }}" class="block text-sm font-medium text-gray-700">
-                                                    {{ ucfirst(str_replace('_', ' ', $key)) }}:
-                                                </label>
-                                                <input type="checkbox" x-model="fieldEnabled" class="ml-2">
-                                                <span x-text="fieldEnabled ? 'Enabled' : 'Disabled'" class="ml-1 text-sm" :class="fieldEnabled ? 'text-green-500' : 'text-red-500'"></span>
-                                            </div>
-                                            <div class="mt-1">
-                                                <template x-if="fieldEnabled">
-                                                    <input type="text"
-                                                           id="{{ $sectionKey }}_{{ $key }}"
-                                                           wire:model="fields.{{ $sectionKey }}.{{ $key }}.value"
-                                                           class="block w-full mt-1 border-gray-300 rounded-md shadow-sm">
-                                                </template>
-                                                <template x-if="!fieldEnabled">
-                                                    <span class="block w-full mt-1 bg-gray-100 border-gray-300 rounded-md shadow-sm">
-                                                        {{ $fields[$sectionKey][$key]['value'] ?? $data['default'] }}
-                                                    </span>
-                                                </template>
-                                                @error("fields.{$sectionKey}.{$key}.value")
-                                                    <div class="mt-1 text-sm text-red-500">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                    @endif
-                                @endif
-                            @endforeach
+            <div class="relative max-h-[90dvh] mx-auto rounded-lg min-1150">
+                <form wire:submit.prevent="createInvoice" class="space-y-6">
+                    <div class="p-8 rounded-lg shadow-lg bg-white max-h-[80dvh] overflow-y-auto">
+                        <div class="pb-8 mb-4 border-b">
+                            <nav class="flex -mb-px space-x-8" aria-label="Tabs">
+                                @foreach ($config['invoice_structure'] as $sectionKey => $sectionData)
+                                    <button type="button" @click="activeTab = '{{ $sectionKey }}'" class="px-1 py-4 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 whitespace-nowrap" :class="{ 'border-indigo-500 text-indigo-600': activeTab === '{{ $sectionKey }}' }">
+                                        {{ ucfirst(str_replace('_', ' ', $sectionKey)) }}
+                                    </button>
+                                @endforeach
+                                <button type="button" @click="activeTab = 'items'" class="px-1 py-4 text-sm font-medium text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 whitespace-nowrap" :class="{ 'border-indigo-500 text-indigo-600': activeTab === 'items' }">
+                                    Items
+                                </button>
+                            </nav>
                         </div>
-                    </fieldset>
-                @endforeach
 
-                <div class="mt-6">
-                    <h3 class="text-lg font-medium">Items</h3>
-                    @foreach ($items as $index => $item)
-                        <div class="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-3">
-                            <div>
-                                <label for="item_name_{{ $index }}" class="block text-sm font-medium text-gray-700">Name:</label>
-                                <input type="text" id="item_name_{{ $index }}" wire:model="items.{{ $index }}.name" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm">
-                                @error('items.' . $index . '.name')
-                                    <div class="mt-1 text-sm text-red-500">{{ $message }}</div>
-                                @enderror
+                        @foreach ($config['invoice_structure'] as $sectionKey => $sectionData)
+                            <div x-show="activeTab === '{{ $sectionKey }}'">
+                                <div class="grid grid-cols-1 gap-4 mt-2 sm:grid-cols-2">
+                                    @foreach ($sectionData as $key => $data)
+                                        <x-invoice-input-field
+                                            :sectionKey="$sectionKey"
+                                            :fieldKey="$key"
+                                            :label="ucfirst(str_replace('_', ' ', $key))"
+                                            :defaultValue="$data['default'] ?? ''"
+                                        />
+                                    @endforeach
+                                </div>
                             </div>
+                        @endforeach
 
-                            <div>
-                                <label for="item_quantity_{{ $index }}" class="block text-sm font-medium text-gray-700">Quantity:</label>
-                                <input type="number" id="item_quantity_{{ $index }}" wire:model="items.{{ $index }}.quantity" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm">
-                                @error('items.' . $index . '.quantity')
-                                    <div class="mt-1 text-sm text-red-500">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label for="item_price_{{ $index }}" class="block text-sm font-medium text-gray-700">Price:</label>
-                                <input type="number" id="item_price_{{ $index }}" wire:model="items.{{ $index }}.price" class="block w-full mt-1 border-gray-300 rounded-md shadow-sm">
-                                @error('items.' . $index . '.price')
-                                    <div class="mt-1 text-sm text-red-500">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-span-1 text-right sm:col-span-3">
-                                <button type="button" wire:click="removeItem({{ $index }})" class="px-2 py-1 mt-2 text-white bg-red-500 rounded">Remove Item</button>
-                            </div>
+                        <div x-show="activeTab === 'items'">
+                            <x-invoice-items :items="$items" />
                         </div>
-                    @endforeach
+                    </div>
 
-                    <button type="button" wire:click="addItem" class="px-4 py-2 mt-4 text-white bg-blue-500 rounded">Add Item</button>
-                </div>
-
-                <div class="mt-6 text-right">
-                    <button type="submit" class="px-4 py-2 text-white bg-green-500 rounded">Create Invoice</button>
-                </div>
-            </form>
+                    <div class="flex justify-end mt-6">
+                        <button type="submit" class="px-4 py-2 text-white bg-green-500 rounded">Create Invoice</button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        <x-slot name="footer">
-            <button @click="$dispatch('close-modal')" class="mr-2 modal-button">Cancel</button>
-        </x-slot>
-    </x-modal>
+    </x-invoice-modal>
 </div>

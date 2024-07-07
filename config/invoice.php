@@ -25,29 +25,21 @@ return [
                 'default' => null,
             ],
         ],
-        'parties' => [
-            'from' => [
-                'enabled' => true,
-                'fields' => [
-                    'name' => ['enabled' => true, 'default' => 'Connor Price'],
-                    'phone' => ['enabled' => true, 'default' => '0987611321'],
-                    'email' => ['enabled' => true, 'default' => 'email@company.com'],
-                    'address_line_1' => ['enabled' => true, 'default' => '1234 Street Name'],
-                    'address_line_2' => ['enabled' => true, 'default' => 'Suite 567'],
-                    'address_line_3' => ['enabled' => true, 'default' => 'City, State, ZIP'],
-                ],
-            ],
-            'to' => [
-                'enabled' => true,
-                'fields' => [
-                    'name' => ['enabled' => true, 'default' => ''],
-                    'phone' => ['enabled' => true, 'default' => ''],
-                    'email' => ['enabled' => true, 'default' => ''],
-                    'address_line_1' => ['enabled' => true, 'default' => ''],
-                    'address_line_2' => ['enabled' => true, 'default' => ''],
-                    'address_line_3' => ['enabled' => true, 'default' => ''],
-                ],
-            ],
+        'from' => [
+            'name' => ['enabled' => true, 'default' => 'Connor Price'],
+            'phone' => ['enabled' => true, 'default' => '0987611321'],
+            'email' => ['enabled' => true, 'default' => 'email@company.com'],
+            'address_line_1' => ['enabled' => true, 'default' => '1234 Street Name'],
+            'address_line_2' => ['enabled' => true, 'default' => 'Suite 567'],
+            'address_line_3' => ['enabled' => true, 'default' => 'City, State, ZIP'],
+        ],
+        'to' => [
+            'name' => ['enabled' => true, 'default' => ''],
+            'phone' => ['enabled' => true, 'default' => ''],
+            'email' => ['enabled' => true, 'default' => ''],
+            'address_line_1' => ['enabled' => true, 'default' => ''],
+            'address_line_2' => ['enabled' => true, 'default' => ''],
+            'address_line_3' => ['enabled' => true, 'default' => ''],
         ],
         'details' => [
             'description' => [
@@ -62,15 +54,13 @@ return [
                 'enabled' => true,
                 'default' => 'Account Number:  12345678<br>Sort Code: 12-34-56',
             ],
-        ],
-        'footer' => [
-            'enabled' => true,
-            'default' => 'Thank you for your business!',
-        ],
-        'additional_fields' => [
             'is_paid' => [
                 'enabled' => true,
                 'default' => false,
+            ],
+            'footer' => [
+                'enabled' => true,
+                'default' => 'Thank you for your business!',
             ],
         ],
     ],
