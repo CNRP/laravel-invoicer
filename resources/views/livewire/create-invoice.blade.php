@@ -35,7 +35,8 @@
                         @endforeach
 
                         <div x-show="activeTab === 'items'">
-                            <x-invoice-items :items="$items" />
+                            <livewire:invoice-items :items="$items" />
+
                         </div>
                     </div>
 

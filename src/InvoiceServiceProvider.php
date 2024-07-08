@@ -28,6 +28,8 @@ class InvoiceServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
         Livewire::component('invoice-creator', \CNRP\InvoicePackage\Components\CreateInvoice::class);
+        Livewire::component('invoice-items', \CNRP\InvoicePackage\Components\InvoiceItems::class);
+
         \Illuminate\Support\Facades\Blade::component('invoice::components.invoice-modal', 'invoice-modal');
         \Illuminate\Support\Facades\Blade::component('invoice::components.invoice-input-field', 'invoice-input-field');
         \Illuminate\Support\Facades\Blade::component('invoice::components.invoice-preview', 'invoice-preview');

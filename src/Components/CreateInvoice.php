@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
+use Livewire\Attributes\On;
 
 class CreateInvoice extends Component
 {
@@ -33,7 +34,7 @@ class CreateInvoice extends Component
                     if (isset($data['enabled'])) {
                         $this->fields[$section][$key] = [
                             'enabled' => $data['enabled'],
-                            'value' => $data['default'],
+                            'value' => $data['default'] ?? '',
                         ];
                     }
                 }
@@ -46,9 +47,24 @@ class CreateInvoice extends Component
         }
     }
 
+    #[On('itemsUpdated')]
+    public function updateItems($items)
+    {
+        $this->items = $items;
+        $this->updatePreview();
+    }
+
+    // #[On('columnsUpdated')]
+    // public function updateColumns($columns)
+    // {
+    //     $this->columns = $columns;
+    //     $this->updatePreview();
+    // }
+
     public function addItem()
     {
         $this->items[] = ['name' => '', 'quantity' => 1, 'price' => 0];
+        $this->dispatch('itemsUpdated', $this->items);
         $this->updatePreview();
     }
 
@@ -56,6 +72,7 @@ class CreateInvoice extends Component
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
+        $this->dispatch('itemsUpdated', $this->items);
         $this->updatePreview();
     }
 
@@ -73,7 +90,8 @@ class CreateInvoice extends Component
 
         if ($validator->fails()) {
             Log::error('Validation failed', $validator->errors()->toArray());
-            return response()->json(['errors' => $validator->errors()], 422);
+            $this->addError('validation', 'Validation failed. Please check your input.');
+            return;
         }
 
         $invoice = new Invoice($filteredFields, $this->items);

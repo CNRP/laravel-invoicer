@@ -19,7 +19,7 @@ class Invoice
         $this->config = $config;
         $this->items = $items;
         $this->calculateTotal();
-        Log::info('Invoice created', ['config' => $config, 'contacts' => $items]);
+        Log::info('Invoice created', ['config' => $config, 'items' => $items]);
     }
 
     public function addItem(array $item)
@@ -34,9 +34,8 @@ class Invoice
         $this->total = 0;
         foreach ($this->items as $item) {
             $quantity = $item['quantity'] ?? 1;
-            if (isset($item['price'])) {
-                $this->total += $quantity * $item['price'];
-            }
+            $price = isset($item['price']) ? (float)$item['price'] : 0.0;
+            $this->total += $quantity * $price;
         }
     }
 
