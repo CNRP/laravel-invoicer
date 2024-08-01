@@ -107,7 +107,7 @@ class Invoice
             } else {
                 $filename = 'invoice-' . time() . '.pdf';
             }
-            
+
             $directory = storage_path('app/invoices/');
             $path = $directory . $filename;
 
@@ -140,10 +140,33 @@ class Invoice
         }
     }
 
-    public function generateAndDownloadPdf()
+    public function generateAndDownloadPdf($customName = null)
     {
-        $filename = $this->generatePdf();
+        $filename = $this->generatePdf($customName);
         $downloadUrl = route('invoices.download', ['filename' => $filename]);
         return redirect()->to($downloadUrl);
     }
+    
+    private function sanitizeFileName($filename)
+    {
+        // Remove any character that isn't a word character, a space, or a hyphen
+        $filename = preg_replace('/[^\w\s-]/', '', $filename);
+        
+        // Replace multiple spaces with a single space
+        $filename = preg_replace('/\s+/', ' ', $filename);
+        
+        // Convert spaces to hyphens
+        $filename = str_replace(' ', '-', $filename);
+        
+        // Remove leading/trailing hyphens
+        $filename = trim($filename, '-');
+        
+        // Ensure the filename is not empty after sanitization
+        if (empty($filename)) {
+            $filename = 'invoice-' . time();
+        }
+        
+        return $filename;
+    }
+    
 }
