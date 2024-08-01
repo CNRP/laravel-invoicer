@@ -99,11 +99,15 @@ class Invoice
         return $filteredConfig;
     }
 
-    public function generatePdf()
+    public function generatePdf($customName = null)
     {
         try {
-
-            $filename = 'invoice-' . time() . '.pdf';
+            if ($customName) {
+                $filename = $this->sanitizeFileName($customName) . '.pdf';
+            } else {
+                $filename = 'invoice-' . time() . '.pdf';
+            }
+            
             $directory = storage_path('app/invoices/');
             $path = $directory . $filename;
 
